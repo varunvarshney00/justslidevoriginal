@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clicky Overlay</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+    body {
+      font-family: 'Segoe Script', 'Comic Sans MS', 'Caveat', cursive;
+    }
+    #overlay-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 8, 20, 0.85);
+      z-index: 1;
+    }
+    #canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+    }
+    #close-btn {
+      position: fixed;
+      top: 18px;
+      right: 24px;
+      z-index: 10;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    #close-btn:hover {
+      background: rgba(255, 68, 68, 0.7);
+      border-color: #ff4444;
+    }
+    #status-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      padding: 8px 24px;
+      background: rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 20px;
+      color: #aaa;
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+    }
+    #status-bar .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff88;
+      margin-right: 8px;
+      animation: blink 1s infinite;
+    }
+    #status-bar.error .dot { background: #ff4444; animation: none; }
+    #status-bar.done .dot { background: #4488ff; animation: none; }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Blue glowing cursor buddy */
+    #cursor-buddy {
+      position: fixed;
+      z-index: 5;
+      pointer-events: none;
+      width: 24px;
+      height: 24px;
+      transform-origin: 4px 2px;
+      transition: none;
+      opacity: 0;
+      will-change: transform, left, top;
+    }
+    #cursor-buddy.visible {
+      opacity: 1;
+      transition: opacity 0.8s ease-in;
+    }
+    #cursor-buddy svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 0 8px #4a9eff) drop-shadow(0 0 16px #4a9eff55);
+    }
+    #cursor-buddy.flying svg {
+      filter: drop-shadow(0 0 12px #4a9eff) drop-shadow(0 0 24px #4a9effaa) drop-shadow(0 0 36px #4a9eff44);
+    }
+    #cursor-trail {
+      position: fixed;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    /* Speech bubble */
+    #cursor-bubble {
+      position: fixed;
+      z-index: 6;
+      pointer-events: none;
+      background: #4a9eff;
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: opacity 0.3s ease-out, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 0 8px rgba(74, 158, 255, 0.5), 0 2px 8px rgba(0,0,0,0.3);
+      will-change: transform, opacity;
+    }
+    #cursor-bubble.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <canvas id="cursor-trail" width="1920" height="1080"></canvas>
+
+  <!-- Blue cursor buddy (triangle pointer) -->
+  <div id="cursor-buddy">
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M4 2 L20 14 L4 20 L8 12 Z" fill="#4a9eff"/>
+    </svg>
+  </div>
+
+  <!-- Speech bubble for pointing at elements -->
+  <div id="cursor-bubble"></div>
+
+  <button id="close-btn" title="Close (ESC)">✕</button>
+  <div id="status-bar"><span class="dot"></span>Drawing...</div>
+
+  <script type="module" src="./overlay.js"></script>
+</body>
+</html>
