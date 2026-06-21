@@ -28,11 +28,13 @@ import {
 export const commandQueue = [];
 export const commandHistory = [];
 export let commandCount = 0;
+export let isDrawingFinished = false;
 
 export function addCommand(cmd) {
   if (cmd.cmd === 'clear') {
     commandHistory.length = 0; // clear in-place
   }
+  isDrawingFinished = false;
   commandHistory.push(cmd);
   commandQueue.push(cmd);
   statusBar.innerHTML = `<span class="dot"></span>Drawing... (${commandQueue.length + commandCount} commands)`;
@@ -60,28 +62,27 @@ export async function processQueue() {
     cursor.mode = 'drawing';
     cursor.rotation = -35;
 
-    const label = getCommandLabel(cmd);
-    if (label) {
-      showQuickBubble(label);
-    }
-
     await animateCommand(cmd);
 
-    if (label) {
-      hideQuickBubble();
-    }
-
-    cursor.mode = 'followingCursor';
     await sleep(250);
   }
 
-  if (cursor.visible) {
+  flags.isAnimating = false;
+
+  if (isDrawingFinished && cursor.visible) {
     await sleep(400);
     cursor.rotation = -35;
     await flyBackToCursor();
   }
+}
 
-  flags.isAnimating = false;
+export async function finishDrawing() {
+  isDrawingFinished = true;
+  if (!flags.isAnimating && commandQueue.length === 0 && cursor.visible) {
+    await sleep(400);
+    cursor.rotation = -35;
+    await flyBackToCursor();
+  }
 }
 
 export function clearCanvas() {
@@ -105,6 +106,7 @@ export async function replayCommands() {
 
   commandCount = 0;
   commandQueue.push(...commandHistory);
+  isDrawingFinished = true;
 
   statusBar.className = '';
   statusBar.innerHTML = `<span class="dot"></span>Replaying... (${commandQueue.length} commands)`;
@@ -325,15 +327,6 @@ export async function animateLabel(cmd) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const metrics = ctx.measureText(text);
-  const pad = scaleS(8);
-
-  ctx.fillStyle = bg;
-  const rx = x - metrics.width / 2 - pad;
-  const ry = y - size / 2 - pad / 2;
-  const rw = metrics.width + pad * 2;
-  const rh = size + pad;
-  roundRect(ctx, rx, ry, rw, rh, scaleS(4));
-  ctx.fill();
 
   ctx.textAlign = 'left';
   let curX = x - metrics.width / 2;

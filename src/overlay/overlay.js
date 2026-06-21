@@ -16,7 +16,8 @@ import {
   addCommand,
   replayCommands,
   commandQueue,
-  commandCount
+  commandCount,
+  finishDrawing
 } from './drawing.js';
 
 // --- Event Listeners ---
@@ -36,6 +37,7 @@ listen('drawing-done', () => {
   console.log('[overlay] done, total commands:', commandCount);
   statusBar.innerHTML = `<span class="dot"></span>Done! ${commandCount} elements drawn. Press R to replay, ESC to close.`;
   statusBar.className = 'done';
+  finishDrawing();
 });
 
 listen('navigate-to-element', (event) => {
