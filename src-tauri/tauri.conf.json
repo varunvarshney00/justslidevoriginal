@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Clicky - Visual Explainer",
         "width": 400,
         "height": 520,

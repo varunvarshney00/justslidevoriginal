@@ -129,6 +129,7 @@ async fn start_explain(app: tauri::AppHandle, query: String) -> Result<(), Strin
     .always_on_top(true)
     .fullscreen(true)
     .title("Clicky Overlay")
+    .visible(false)
     .build()
     .map_err(|e| {
         eprintln!("[clicky] ERROR creating overlay: {}", e);
@@ -158,6 +159,12 @@ async fn start_explain(app: tauri::AppHandle, query: String) -> Result<(), Strin
         match rx.recv_timeout(std::time::Duration::from_secs(5)) {
             Ok(()) => eprintln!("[clicky] overlay ready, starting stream"),
             Err(_) => eprintln!("[clicky] overlay ready timeout, starting stream anyway"),
+        }
+
+        // Show window now that the overlay page is loaded and styling has settled
+        if let Some(overlay_win) = app_handle.get_webview_window("overlay") {
+            let _ = overlay_win.show();
+            let _ = overlay_win.set_focus();
         }
 
         // Small extra delay to be safe
@@ -361,12 +368,13 @@ fn extract_and_emit_commands_final(app: &tauri::AppHandle, buffer: &mut String) 
 
 #[tauri::command]
 async fn close_overlay(app: tauri::AppHandle) -> Result<(), String> {
-    if let Some(overlay) = app.get_webview_window("overlay") {
-        let _ = overlay.close();
-    }
+    eprintln!("[clicky] close_overlay called");
     if let Some(main_win) = app.get_webview_window("main") {
         let _ = main_win.show();
         let _ = main_win.set_focus();
+    }
+    if let Some(overlay) = app.get_webview_window("overlay") {
+        let _ = overlay.close();
     }
     Ok(())
 }
