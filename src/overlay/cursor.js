@@ -241,23 +241,8 @@ export async function pointAtElement(label, holdMs = 3000) {
   cursor.mode = 'pointingAtTarget';
   cursor.rotation = -35;
 
-  const phrase = label || pointerPhrases[Math.floor(Math.random() * pointerPhrases.length)];
-
-  cursorBubble.textContent = '';
-  cursorBubble.classList.add('show');
-
-  for (let i = 0; i < phrase.length; i++) {
-    if (cursor.mode !== 'pointingAtTarget') break;
-    cursorBubble.textContent += phrase[i];
-    updateBubblePosition();
-    await sleep(25 + Math.random() * 25);
-  }
-
+  // We simply pause for the hold duration since text labels are now handled via audio
   await sleep(holdMs);
-
-  cursorBubble.classList.remove('show');
-  await sleep(500); // 0.5s fade out matching swift spec
-  cursorBubble.textContent = '';
 }
 
 export function showQuickBubble(text) {
