@@ -270,7 +270,7 @@ export async function animateRect(cmd) {
 }
 
 // Handwriting font for canvas
-export const HAND_FONT = "'Segoe Script', 'Comic Sans MS', 'Caveat', cursive";
+export const HAND_FONT = "'Recoleta', serif";
 
 // --- Text animation (typing effect) ---
 export async function animateText(cmd) {
@@ -281,33 +281,26 @@ export async function animateText(cmd) {
   const color = cmd.color || '#ffffff';
 
   ctx.font = `${size}px ${HAND_FONT}`;
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  setGlow(color, 8);
-
+  
   ctx.textAlign = 'center';
   const fullMetrics = ctx.measureText(text);
-  const tw = fullMetrics.width + 20;
+  
+  ctx.textAlign = 'left';
+  let curX = x - fullMetrics.width / 2;
 
-  for (let i = 1; i <= text.length; i++) {
-    clearGlow();
-    ctx.clearRect(x - tw / 2 - 10, y - size / 2 - 10, tw + 20, size + 20);
-
-    ctx.font = `${size}px ${HAND_FONT}`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    setGlow(color, 8);
-
-    let curX = x - tw / 2 + 10;
-    for (let j = 0; j < i; j++) {
-      const ch = text[j];
-      ctx.save();
-      ctx.translate(curX, y);
-      ctx.fillStyle = color;
-      ctx.fillText(ch, 0, 0);
-      ctx.restore();
-      curX += ctx.measureText(ch).width;
-    }
-
+  setGlow(color, 8);
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    
+    ctx.save();
+    ctx.translate(curX, y);
+    ctx.fillStyle = color;
+    ctx.fillText(ch, 0, 0);
+    ctx.restore();
+    
+    curX += ctx.measureText(ch).width;
     moveCursorToPoint(curX, y);
     await sleep(45);
   }
