@@ -142,30 +142,23 @@ export function clearGlow() {
   ctx.shadowBlur = 0;
 }
 
-// --- Line animation (hand-drawn wobble) ---
+// --- Line animation ---
 export async function animateLine(cmd) {
   const steps = 40;
   const x1 = scaleX(cmd.x1), y1 = scaleY(cmd.y1);
   const x2 = scaleX(cmd.x2), y2 = scaleY(cmd.y2);
   const w = scaleS(cmd.width || 2);
-  const len = Math.hypot(x2 - x1, y2 - y1);
-  const wobbleAmp = Math.min(len * 0.008, 3);
 
   ctx.strokeStyle = cmd.color || '#00ffff';
   ctx.lineWidth = w;
   ctx.lineCap = 'round';
   setGlow(cmd.color || '#00ffff', 10);
 
-  const angle = Math.atan2(y2 - y1, x2 - x1);
-  const perpX = -Math.sin(angle);
-  const perpY = Math.cos(angle);
-
   let prevX = x1, prevY = y1;
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
-    const wobble = (i < steps) ? (Math.sin(t * Math.PI * 3) * wobbleAmp + (Math.random() - 0.5) * wobbleAmp * 0.5) : 0;
-    const cx = x1 + (x2 - x1) * t + perpX * wobble;
-    const cy = y1 + (y2 - y1) * t + perpY * wobble;
+    const cx = x1 + (x2 - x1) * t;
+    const cy = y1 + (y2 - y1) * t;
     ctx.beginPath();
     ctx.moveTo(prevX, prevY);
     ctx.lineTo(cx, cy);
@@ -210,33 +203,25 @@ export async function animateArrow(cmd) {
   clearGlow();
 }
 
-// --- Circle animation (hand-drawn wobble) ---
+// --- Circle animation ---
 export async function animateCircle(cmd) {
   const cx = scaleX(cmd.cx), cy = scaleY(cmd.cy);
   const r = scaleS(cmd.r);
   const w = scaleS(cmd.width || 2);
   const steps = 36;
-  const wobbleAmp = Math.min(r * 0.03, 3);
 
   ctx.strokeStyle = cmd.color || '#00ffff';
   ctx.lineWidth = w;
   ctx.lineCap = 'round';
   setGlow(cmd.color || '#00ffff', 10);
 
-  const wobbles = [];
-  for (let i = 0; i <= steps; i++) {
-    wobbles.push((Math.random() - 0.5) * wobbleAmp * 2 + Math.sin(i * 0.8) * wobbleAmp);
-  }
-
   let prevAngle = 0;
   for (let i = 1; i <= steps; i++) {
     const angle = (i / steps) * Math.PI * 2;
-    const rw = r + wobbles[i];
-    const rprev = r + wobbles[i - 1];
-    const px1 = cx + rprev * Math.cos(prevAngle);
-    const py1 = cy + rprev * Math.sin(prevAngle);
-    const px2 = cx + rw * Math.cos(angle);
-    const py2 = cy + rw * Math.sin(angle);
+    const px1 = cx + r * Math.cos(prevAngle);
+    const py1 = cy + r * Math.sin(prevAngle);
+    const px2 = cx + r * Math.cos(angle);
+    const py2 = cy + r * Math.sin(angle);
     ctx.beginPath();
     ctx.moveTo(px1, py1);
     ctx.lineTo(px2, py2);
@@ -301,15 +286,6 @@ export async function animateText(cmd) {
   const fullMetrics = ctx.measureText(text);
   const tw = fullMetrics.width + 20;
 
-  const wobbles = [];
-  for (let i = 0; i < text.length; i++) {
-    wobbles.push({
-      dx: (Math.random() - 0.5) * size * 0.06,
-      dy: (Math.random() - 0.5) * size * 0.08,
-      rot: (Math.random() - 0.5) * 0.03
-    });
-  }
-
   for (let i = 1; i <= text.length; i++) {
     clearGlow();
     ctx.clearRect(x - tw / 2 - 10, y - size / 2 - 10, tw + 20, size + 20);
@@ -322,10 +298,8 @@ export async function animateText(cmd) {
     let curX = x - tw / 2 + 10;
     for (let j = 0; j < i; j++) {
       const ch = text[j];
-      const w = wobbles[j];
       ctx.save();
-      ctx.translate(curX + w.dx, y + w.dy);
-      ctx.rotate(w.rot);
+      ctx.translate(curX, y);
       ctx.fillStyle = color;
       ctx.fillText(ch, 0, 0);
       ctx.restore();
@@ -338,7 +312,7 @@ export async function animateText(cmd) {
   clearGlow();
 }
 
-// --- Label animation (text with background, handwritten) ---
+// --- Label animation (text with background) ---
 export async function animateLabel(cmd) {
   const x = scaleX(cmd.x);
   const y = scaleY(cmd.y);
@@ -366,12 +340,8 @@ export async function animateLabel(cmd) {
   setGlow(color, 6);
   for (let j = 0; j < text.length; j++) {
     const ch = text[j];
-    const dx = (Math.random() - 0.5) * size * 0.05;
-    const dy = (Math.random() - 0.5) * size * 0.06;
-    const rot = (Math.random() - 0.5) * 0.02;
     ctx.save();
-    ctx.translate(curX + dx, y + dy);
-    ctx.rotate(rot);
+    ctx.translate(curX, y);
     ctx.fillStyle = color;
     ctx.fillText(ch, 0, 0);
     ctx.restore();
